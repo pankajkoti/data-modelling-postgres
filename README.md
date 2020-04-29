@@ -32,3 +32,31 @@ The data is for a demo startup called Sparkify where analysts would like to perf
 5. etl.py - The actual ETL file which loads data from data files and inserts into the db
 
 6. test.ipynb - A test Jupyter notebook file to run queries and test if the ETL ran successfully and inserted required data in corresponding tables
+
+# Database Design
+
+Using the song and log datasets, we create a star schema optimized for queries on song play analysis.
+
+Following is how we modelled the data in 1 fact table and 4 corresponding dimension tables:
+
+### Fact Table:
+1. **songplays** - records in log data associated with song plays i.e. records with the page __NextSong__
+    - songplay_id, start_time, user_id, level, song_id, artist_id, session_id, location, user_agent
+ 
+### Dimesion Tables:
+1. **users** - users in the app
+    - user_id, first_name, last_name, gender, level
+2. **songs** - songs in music database
+    - song_id, title, artist_id, year, duration
+3. **artists** - artists in music database
+    - artist_id, name, location, latitude, longitude
+4. **time** - timestamps of records in songplays broken down into specific units
+    - start_time, hour, day, week, month, year, weekday
+
+# ETL process
+
+The ETL process is written in python, has postgres as a relational database backend and makes extensive used of 'pandas' library to process song data from file by reading them in memory one by one and 'psycopg2' library for connecting and writing to postgres.
+
+The ETL process is modelled mainly with two components/processors:
+1. The first component reads song data files one by one, processes them by extracting data required for the songs and artists table and dumps this extracted data to the corresponding postgres dimension tables mentioned above which are 'songs' and 'artists'
+2. The second component reads log data files one by one, extracts user and time specific data from the records and dumps them to 'users' and 'time' tables. Later it does a join on the songs and artists table to extract song_id and artist_id which is required to dump together with the log record in the songplays table
